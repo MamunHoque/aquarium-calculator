@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Meta Data -->
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aquarium Glass Calculator | Professional Tank Design Tool</title>
+  <meta name="description" content="Calculate exact glass dimensions and thickness for your custom aquarium. Supports both standard and sump filter designs with unit conversion.">
+  <meta name="keywords" content="aquarium calculator, fish tank dimensions, glass thickness, sump filter, DIY aquarium">
+  <meta name="author" content="Mamun Hoque">
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Professional Aquarium Glass Calculator">
+  <meta property="og:description" content="Design your perfect aquarium with precise measurements">
+  <meta property="og:type" content="website">
+  <!-- Tailwind CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <!-- Main Container -->
+  <div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4 text-center">Aquarium Glass Calculator</h1>
+    <div class="flex flex-col md:flex-row">
+      <!-- Left Side: Inputs and Outputs -->
+      <div class="md:w-1/2 p-4">
+        <!-- Input Fields -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-semibold mb-4">Enter Aquarium Dimensions</h2>
+          <form id="calculator-form" class="space-y-4">
+            <div>
+              <label for="length" class="block text-sm font-medium">Length</label>
+              <input type="number" id="length" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Enter length">
+            </div>
+            <div>
+              <label for="width" class="block text-sm font-medium">Width</label>
+              <input type="number" id="width" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Enter width">
+            </div>
+            <div>
+              <label for="height" class="block text-sm font-medium">Height</label>
+              <input type="number" id="height" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Enter height">
+            </div>
+            <div>
+              <label for="units" class="block text-sm font-medium">Units</label>
+              <select id="units" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                <option value="inches">Inches</option>
+                <option value="centimeters">Centimeters</option>
+              </select>
+            </div>
+            <div class="flex items-center">
+              <input type="checkbox" id="sump" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+              <label for="sump" class="ml-2 block text-sm font-medium">Include Sump Filter</label>
+            </div>
+            <button type="button" id="calculate-button" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md">Calculate</button>
+          </form>
+        </div>
+        <!-- Output Results -->
+        <div id="results" class="bg-white p-6 rounded-lg shadow-md mt-6 hidden">
+          <h2 class="text-2xl font-semibold mb-4">Results</h2>
+          <div id="results-content">
+            <!-- Results will be inserted here -->
+          </div>
+        </div>
+      </div>
+      <!-- Right Side: Visualization -->
+      <div class="md:w-1/2 p-4 flex items-center justify-center">
+        <div id="visualization" class="bg-white p-6 rounded-lg shadow-md w-full">
+          <!-- SVG 3D Visualization -->
+          <svg id="aquarium-svg" viewBox="0 0 700 700" class="w-full h-full">
+            <!-- Panels will be drawn here -->
+          </svg>
+        </div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <footer class="text-center text-sm text-gray-500 mt-4">
+      © 2024 Aquarium Glass Calculator. All rights reserved. Contact: Mamun Hoque | Email: mamunhqpay[@]gmail.com
+    </footer>
+  </div>
+  <!-- JavaScript -->
+  <script>
+    // JavaScript code to handle calculations and dynamic 3D visualization
+    document.getElementById('calculate-button').addEventListener('click', function() {
+      // Get input values
+      const length = parseFloat(document.getElementById('length').value);
+      const width = parseFloat(document.getElementById('width').value);
+      const height = parseFloat(document.getElementById('height').value);
+      const units = document.getElementById('units').value;
+      const includeSump = document.getElementById('sump').checked;
+
+      // Validate inputs
+      if (isNaN(length) || isNaN(width) || isNaN(height) ||
+          length < 4 || length > 200 ||
+          width < 4 || width > 200 ||
+          height < 4 || height > 200) {
+        alert('Please enter valid dimensions between 4 and 200 ' + units + '.');
+        return;
+      }
+
+      // Convert units to centimeters for calculation
+      let length_cm = units === 'inches' ? length * 2.54 : length;
+      let width_cm = units === 'inches' ? width * 2.54 : width;
+      let height_cm = units === 'inches' ? height * 2.54 : height;
+
+      // Calculate volume in liters
+      let volume = (length_cm * width_cm * height_cm) / 1000; // in cubic centimeters, so divide by 1000 for liters
+
+      // Determine glass thickness
+      let thickness_mm = 5; // default
+      if (volume <= 50) {
+        thickness_mm = 5;
+      } else if (volume <= 100) {
+        thickness_mm = 6;
+      } else if (volume <= 250) {
+        thickness_mm = 8;
+      } else if (volume <= 500) {
+        thickness_mm = 10;
+      } else {
+        thickness_mm = 12;
+      }
+
+      // Adjust thickness if sump filter is included
+      if (includeSump) {
+        thickness_mm += 1;
+      }
+
+      // Calculate panel dimensions (subtracting glass thickness where necessary)
+      const thickness_cm = thickness_mm / 10; // convert mm to cm
+      const frontBackWidth = length_cm;
+      const frontBackHeight = height_cm;
+
+      const sideWidth = width_cm - 2 * thickness_cm;
+      const sideHeight = height_cm;
+
+      const bottomLength = length_cm - 2 * thickness_cm;
+      const bottomWidth = width_cm - 2 * thickness_cm;
+
+      // Prepare results
+      let resultsHTML = `
+        <p><strong>Volume:</strong> ${volume.toFixed(2)} liters (${(volume * 0.264172).toFixed(2)} gallons)</p>
+        <p><strong>Recommended Glass Thickness:</strong> ${thickness_mm} mm</p>
+        <h3 class="text-xl font-semibold mt-4">Glass Panel Dimensions:</h3>
+        <ul class="list-disc list-inside">
+          <li>Front & Back Panels: ${frontBackWidth.toFixed(2)} cm × ${frontBackHeight.toFixed(2)} cm (Quantity: 2)</li>
+          <li>Side Panels: ${sideWidth.toFixed(2)} cm × ${sideHeight.toFixed(2)} cm (Quantity: 2)</li>
+          <li>Bottom Panel: ${bottomLength.toFixed(2)} cm × ${bottomWidth.toFixed(2)} cm (Quantity: 1)</li>
+        </ul>
+      `;
+
+      // Include sump filter panels if applicable
+      if (includeSump) {
+        const sumpVolume = volume * 0.33; // 33% of main tank volume
+        resultsHTML += `
+          <h3 class="text-xl font-semibold mt-4">Sump Filter Dimensions:</h3>
+          <p>Sump Volume: ${sumpVolume.toFixed(2)} liters</p>
+          <!-- Additional sump panel dimensions can be added here -->
+        `;
+      }
+
+      // Display results
+      document.getElementById('results-content').innerHTML = resultsHTML;
+      document.getElementById('results').classList.remove('hidden');
+
+      // Update SVG 3D Visualization
+      updateSVG3D(frontBackWidth, frontBackHeight, sideWidth, sideHeight, bottomLength, bottomWidth, thickness_mm);
+    });
+
+    function updateSVG3D(frontBackWidth, frontBackHeight, sideWidth, sideHeight, bottomLength, bottomWidth, thickness_mm) {
+      const svg = document.getElementById('aquarium-svg');
+      svg.innerHTML = ''; // Clear previous content
+
+      // Define positions for each panel, displayed one by one
+      const frontPanel = {
+        x: 100,
+        y: 100,
+        width: frontBackWidth,
+        height: frontBackHeight,
+        color: '#e0f2fe',
+        label: 'Front Panel',
+      };
+      const backPanel = {
+        x: 100,
+        y: 300,
+        width: frontBackWidth,
+        height: frontBackHeight,
+        color: '#e0f2fe',
+        label: 'Back Panel',
+      };
+      const leftPanel = {
+        x: 400,
+        y: 100,
+        width: sideWidth,
+        height: sideHeight,
+        color: '#bae6fd',
+        label: 'Left Side Panel',
+      };
+      const rightPanel = {
+        x: 400,
+        y: 300,
+        width: sideWidth,
+        height: sideHeight,
+        color: '#bae6fd',
+        label: 'Right Side Panel',
+      };
+      const bottomPanel = {
+        x: 250,
+        y: 500,
+        width: bottomLength,
+        height: bottomWidth,
+        color: '#cbd5e1',
+        label: 'Bottom Panel',
+      };
+
+      // Draw each panel one by one
+      drawPanel(svg, frontPanel);
+      drawPanel(svg, backPanel);
+      drawPanel(svg, leftPanel);
+      drawPanel(svg, rightPanel);
+      drawPanel(svg, bottomPanel);
+    }
+
+    function drawPanel(svg, panel) {
+      // Create and append a polygon for each panel with dimensions and label
+      const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      rect.setAttribute('x', panel.x);
+      rect.setAttribute('y', panel.y);
+      rect.setAttribute('width', panel.width);
+      rect.setAttribute('height', panel.height);
+      rect.setAttribute('fill', panel.color);
+      rect.setAttribute('stroke', '#475569');
+      rect.setAttribute('stroke-width', '1');
+
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', panel.x + panel.width / 2);
+      label.setAttribute('y', panel.y - 10);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('fill', '#475569');
+      label.setAttribute('font-size', '14');
+      label.textContent = `${panel.label} (${panel.width.toFixed(2)} cm × ${panel.height.toFixed(2)} cm)`;
+
+      svg.appendChild(rect);
+      svg.appendChild(label);
+    }
+  </script>
+</body>
+</html>
