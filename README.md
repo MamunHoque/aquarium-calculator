@@ -1,6 +1,8 @@
-# Aquarium Glass Calculator
+# Aquarium Glass Calculator | Professional Tank Design 
 
 This project is a simple **Aquarium Glass Calculator** that helps users calculate the glass dimensions for building aquariums based on user-provided dimensions. The calculator displays the appropriate glass sizes for each panel (Front, Back, Sides, and Bottom), along with a recommended glass thickness based on the aquarium's volume.
+
+![Aquarium Glass Calculator Demo](./demo.png)
 
 ## Project Details
 
